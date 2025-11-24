@@ -1,2 +1,3 @@
 # main
-print('prueba')
+mario="gay"
+print(mario)
