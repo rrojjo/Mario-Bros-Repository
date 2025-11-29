@@ -1,6 +1,6 @@
 # main
 
-from clases.juego import Tablero
+from clases.tablero import Tablero
 # NOMBRE DEL ARCHIVO: main.py
 from clases.app import App
 

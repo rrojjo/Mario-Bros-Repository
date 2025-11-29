@@ -40,18 +40,18 @@ class Personaje:
             self.__y = y
 
 #Función mover
-    def mover(self, direccion: str, ancho_tablero: int):
+    def mover(self, direccion: str, alto_tablero: int):
         """ Este es un ejemplo de como mover un personaje horizontalmente. No se considerarán los obstáculos.
         :param direccion: un string que puede ser derecha o izquierda
         :param ancho_tablero: el ancho del tablero para comprobar límites
         """
         # Variable local para almacenar el ancho del personaje y poder  comprobar colisiones con borde derecho
         # del tablero
-        ancho_personaje = self.sprite[3]
-        if (direccion.lower() == "derecha" and self.x + ancho_personaje < ancho_tablero):
-            self.x += 1
-        elif (direccion.lower() == "izquierda" and self.x > 0):
-            self.x -= 1
+        alto_personaje = self.sprite[4]
+        if (direccion.lower() == "arriba" and self.y > 0):
+            self.y -= 1
+        elif (direccion.lower() == "abajo" and self.y + alto_personaje < alto_tablero):
+            self.y += 1
 
 #Propiedad piso
 

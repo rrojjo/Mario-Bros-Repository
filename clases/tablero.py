@@ -25,7 +25,7 @@ class Tablero:
 
         #----------------------------------------------------
         # Cargando el fichero pyxres con las imágenes
-        # 1. Buscamos la carpeta donde vive este archivo (juego.py)
+        # 1. Buscamos la carpeta donde vive este archivo (tablero.py)
         # Esto devolverá algo como: "C:\...\Mario Bros\clases"
         carpeta_actual = os.path.dirname(os.path.abspath(__file__))
 
@@ -82,11 +82,11 @@ class Tablero:
         # Para salir del juego
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
-        # Movimiento horizontal
-        elif pyxel.btn(pyxel.KEY_RIGHT):
-            self.personaje.mover('derecha', self.ancho)
-        elif pyxel.btn(pyxel.KEY_LEFT):
-            self.personaje.mover('izquierda', self.ancho)
+        # Movimiento vertical
+        elif pyxel.btn(pyxel.KEY_UP):
+            self.personaje.mover('arriba', self.alto)
+        elif pyxel.btn(pyxel.KEY_DOWN):
+            self.personaje.mover('abajo', self.alto)
 
     def draw(self):
         """Este es un método pyxel que se ejecuta en cada iteración del juego (cada

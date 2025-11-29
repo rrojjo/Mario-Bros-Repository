@@ -1,5 +1,5 @@
+from paquete import Paquete
 # Contiene la clase Cinta.
-#Faltan unas cosas
 
 class Cinta:
 
@@ -8,6 +8,7 @@ class Cinta:
         self.x = x
         self.y = y
         self.piso = piso
+        self._paquetes=[] #lista de paquetes en la cinta
 
 #Propiedad numero
 
@@ -68,3 +69,23 @@ class Cinta:
             raise ValueError("El piso no debe ser un número negativo")
         else:
             self.__piso = piso
+
+# Métodos de gestión de paquetes
+
+    @property
+    def paquetes(self) -> list:
+        return self._paquetes
+
+    def agregar_paquete(self, paquete: Paquete):
+        #Agrega un paquete a la cinta
+        if type(paquete) != Paquete:
+            raise TypeError("Solo objetos Paquete.")
+        self._paquetes.append(paquete)
+
+    def retirar_paquete(self, paquete: Paquete):
+        #Retira un paquete específico de la cinta
+        if paquete in self._paquetes:
+            self._paquetes.remove(paquete)
+
+    def _str_ (self) -> str:
+        return f"Cinta {self.numero} en posición ({self.x}, {self.y}) en el piso {self.piso} con {len(self._paquetes)} paquetes"
