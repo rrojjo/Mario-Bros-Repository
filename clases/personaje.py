@@ -7,9 +7,14 @@ class Personaje:
         self.y = y
         self.piso = piso
         self.nombre = nombre
-        self.sprite = (0, 0, 0, 16, 16, 15)
 
-#Propiedad x
+        if self.nombre == "Luigi":
+            x_sprite = 0
+        else: # Mario
+            x_sprite = 16
+        self.sprite = (0, x_sprite, 0, 16, 16, 15)
+
+    #Propiedad x
 
     @property
     def x(self) -> int:
