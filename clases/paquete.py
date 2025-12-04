@@ -7,9 +7,22 @@ class Paquete:
         self.y = y
         self.piso = piso
         self.cinta_actual = cinta_actual
-        self.velocidad = 1  # píxeles por frame
-        self._sprite_vacio = (0, 0, 16, 8, 8, 15)  # Sprite caja vacía
-        self._sprite_lleno = (0, 8, 16, 8, 8, 15)  # Sprite caja llena
+        # El paquete nace con la forma de la cinta anterior
+        # (o 0 si es la primera)
+        if cinta_actual == 0:
+            self.indice_sprite = 0
+        else:
+            self.indice_sprite = cinta_actual - 1
+        self.velocidad=1
+        self.sprites = {
+            0: (0, 32, 36, 16, 12),  # Forma Inicial
+            1: (0, 48, 36, 16, 12),  # Forma 1 (Cinta 1)
+            2: (0, 64, 36, 16, 12),  # Forma 2 (Cinta 2)
+            3: (0, 80, 36, 16, 12),  # Forma 3 (Cinta 3)
+            4: (0, 96, 36, 16, 12),  # Forma 4 (Cinta 4)
+            5: (0, 112, 36, 16, 12)
+            # Forma 5 (Cinta 5 - Última antes del camión)
+        }
 
     @property
     def x(self) -> int:
@@ -63,16 +76,17 @@ class Paquete:
         else:
             self.__cinta_actual = valor
 
-    def get_sprite(self):
-        """Devuelve el sprite según si está en cinta 0 (vacío) o no (lleno)"""
-        if self.cinta_actual == 0:
-            return self._sprite_vacio
-        else:
-            return self._sprite_lleno
+        # --- MÉTODOS VISUALES ---
 
-    def mover(self):
-        """Mueve el paquete hacia la derecha según su velocidad"""
-        self.x += self.velocidad
+    @property
+    def sprite(self):
+        """Devuelve el sprite basado en el INDICE VISUAL, no en la cinta"""
+        return self.sprites.get(self.indice_sprite, self.sprites[0])
+
+    def evolucionar(self, numero_cinta: int):
+        """Cambia la forma a la correspondiente a esta cinta"""
+        self.indice_sprite = numero_cinta
+
 
     def esta_en_extremo(self, limite_x: int) -> bool:
         """Verifica si el paquete llegó al extremo de la cinta"""

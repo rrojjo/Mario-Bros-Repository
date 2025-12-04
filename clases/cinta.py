@@ -1,4 +1,4 @@
-from paquete import Paquete
+from clases.paquete import Paquete
 # Contiene la clase Cinta.
 
 class Cinta:
@@ -9,6 +9,8 @@ class Cinta:
         self.y = y
         self.piso = piso
         self._paquetes=[] #lista de paquetes en la cinta
+
+        self.ancho=159 #ancho visual de la cinta
 
 #Propiedad numero
 
@@ -86,6 +88,54 @@ class Cinta:
         #Retira un paquete específico de la cinta
         if paquete in self._paquetes:
             self._paquetes.remove(paquete)
+
+    # --- LÓGICA SPRINT 3 ---
+
+    def actualizar_paquetes(self):
+        velocidad = 1
+
+        # Calculamos el punto medio exacto de esta cinta
+        centro_cinta = self.x + (self.ancho / 2)
+
+        for p in self._paquetes:
+
+            # --- 1. MOVIMIENTO (Zig-Zag) ---
+            if self.numero == 0 or self.numero % 2 != 0:
+                p.x -= velocidad  # Izquierda
+            else:
+                p.x += velocidad  # Derecha
+
+            # --- 2. CAMBIO DE FORMA (Al cruzar la mitad) ---
+            # Solo si el paquete aún no tiene la forma de esta cinta
+            if p.indice_sprite != self.numero:
+
+                # Caso A: La cinta mueve a la IZQUIERDA
+                # Si el paquete pasa el centro hacia la izq (x es menor que centro)
+                if (
+                        self.numero == 0 or self.numero % 2 != 0) and p.x < centro_cinta:
+                    p.evolucionar(self.numero)
+
+                # Caso B: La cinta mueve a la DERECHA
+                # Si el paquete pasa el centro hacia la der (x es mayor que centro)
+                elif (self.numero % 2 == 0) and p.x > centro_cinta:
+                    p.evolucionar(self.numero)
+
+    def paquete_llego_al_final(self):
+        """Detecta si el paquete llegó al punto de recogida"""
+        for p in self._paquetes:
+
+            # Cintas que van a la IZQUIERDA (0, 1, 3, 5)
+            # El final es cuando x <= self.x (el inicio visual de la cinta)
+            if self.numero == 0 or self.numero % 2 != 0:
+                if p.x <= self.x:
+                    return p
+
+            # Cintas que van a la DERECHA (2, 4)
+            # El final es cuando x >= self.x + ancho
+            else:
+                if p.x >= self.x + self.ancho:
+                    return p
+        return None
 
     def _str_ (self) -> str:
         return f"Cinta {self.numero} en posición ({self.x}, {self.y}) en el piso {self.piso} con {len(self._paquetes)} paquetes"
