@@ -6,6 +6,11 @@ from clases.cinta import Cinta
 from clases.paquete import Paquete
 import pyxel
 
+# --- CONSTANTES DE ESTADO ---
+JUGANDO = 1
+REPARTO = 2
+GAMEOVER = 3
+
 
 class Tablero:
     """Esta clase contiene un simple tablero"""
@@ -15,6 +20,11 @@ class Tablero:
         self.ancho = ancho
         self.alto = alto
         self.pisos = pisos
+
+        # --- CONTROL DE ESTADOS (SPRINT 4) ---
+        self.estado_juego = JUGANDO
+        self.tiempo_reparto = 120  # 120 frames = 2 segundos de descanso
+        self.contador_reparto = 0
 
         # --- 1. DEFINICIÓN DE ALTURAS (Basado en tu imagen) ---
         # Mapeamos: Número de Piso Lógico -> Coordenada Y visual
@@ -151,6 +161,19 @@ class Tablero:
         else:
             self.__pisos = valor
 
+    def reiniciar_juego(self):
+        """Reinicia variables para jugar otra vez"""
+        self.puntos = 0
+        self.fallos = 0
+        self.camion.vaciar()
+        self.estado_juego = JUGANDO
+        # Limpiar paquetes de las cintas
+        for cinta in self.cintas:
+            # Accedemos a la lista protegida a través de la property (si existe setter)
+            # o limpiamos uno a uno. Como _paquetes es interno, usaremos un truco:
+            while len(cinta.paquetes) > 0:
+                cinta.retirar_paquete(cinta.paquetes[0])
+
 
     def update(self):
         """ Este es un metodo pyxel que se ejecuta en cada iteración del
@@ -160,6 +183,11 @@ class Tablero:
         # Para salir del juego
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
+
+        # --- LÓGICA DE GAME OVER ---
+        # Si tenemos 3 fallos o más, NO ejecutamos nada más del juego
+        if self.fallos >= 3:
+            return  # Se acaba la función aquí (el juego se congela)
         # --- MOVIMIENTO DE MARIO (Flechas) ---
         # Sube y baja de 2 en 2 pisos (0 -> 2 -> 4)
 
@@ -278,9 +306,23 @@ class Tablero:
 
                         siguiente_cinta.agregar_paquete(paquete_saliente)
 
+
                     elif cinta.numero == 5:
+
+                        # El paquete entra al camión
+
                         self.camion.cargar_paquete()
-                        self.puntos += 10
+
+                        # REGLA 2: +10 puntos SOLO si el camión se completa
+
+                        if self.camion.esta_lleno():
+                            self.puntos += 10
+
+                            # Temporalmente lo vaciamos aquí para seguir probando la puntuación
+
+                            # (En el siguiente paso haremos que el camión "se vaya" de reparto)
+
+                            self.camion.vaciar()
                 else:
                     self.fallos += 1
 
@@ -298,8 +340,6 @@ class Tablero:
         pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite)
         pyxel.blt(self.luigi.x, self.luigi.y, *self.luigi.sprite)
         pyxel.blt(self.camion.x, self.camion.y, *self.camion.sprite)
-        pyxel.text(10, 5, f"PUNTOS: {self.puntos}", 7) # Color 7 es blanco
-        pyxel.text(100, 5, f"FALLOS: {self.fallos}", 8)  # Color 8 es rojo
 
         # PAQUETES (Sprint 3)
         for cinta in self.cintas:
@@ -316,6 +356,18 @@ class Tablero:
 
         # DISPENSADOR DE PAQUETES
         pyxel.blt(352, 158, 0, 128, 70, 16, 6)
+
+        pyxel.text(10, 5, f"PUNTOS: {self.puntos}", 7) # Color 7 es blanco
+
+        color_fallos = 8  # Rojo
+        if self.fallos >= 3:
+            # TEXTO GRANDE CENTRADO (Más o menos)
+            pyxel.text(self.ancho // 2 - 20, self.alto // 2, "GAME OVER", 8)
+            pyxel.text(self.ancho // 2 - 35, self.alto // 2 + 10,
+                       "Pulsa Q para salir", 7)
+
+        pyxel.text(100, 5, f"FALLOS: {self.fallos}", color_fallos)
+
 
         # DEBUG: Ver dónde están las cintas invisibles (Puntos Rojos)
         # Esto te ayudará a saber si la lógica coincide con el dibujo

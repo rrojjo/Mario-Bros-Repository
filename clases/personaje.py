@@ -96,7 +96,4 @@ class Personaje:
         # Actualizamos la coordenada visual
         self.y = nueva_y
 
-    def __str__(self):
-        return f"Personaje {self.nombre} en posición ({self.x}, {self.y}) en el piso {self.piso}"
-
 

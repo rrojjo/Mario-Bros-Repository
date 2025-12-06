@@ -10,7 +10,9 @@ class Cinta:
         self.piso = piso
         self._paquetes=[] #lista de paquetes en la cinta
 
-        self.ancho=154 #ancho visual de la cinta
+        self.ancho=146 #ancho visual de la cinta
+        self.centro_cinta = self.x + (self.ancho / 2)
+
 
 #Propiedad numero
 
@@ -94,9 +96,6 @@ class Cinta:
     def actualizar_paquetes(self):
         velocidad = 1
 
-        # Calculamos el punto medio exacto de esta cinta
-        centro_cinta = self.x + (self.ancho / 2)
-
         for p in self._paquetes:
 
             # --- 1. MOVIMIENTO (Zig-Zag) ---
@@ -111,13 +110,14 @@ class Cinta:
 
                 # Caso A: La cinta mueve a la IZQUIERDA
                 # Si el paquete pasa el centro hacia la izq (x es menor que centro)
-                if (
-                        self.numero == 0 or self.numero % 2 != 0) and p.x < centro_cinta:
+                if ((
+                        self.numero == 0 or self.numero % 2 != 0) and p.x <
+                        self.centro_cinta):
                     p.evolucionar(self.numero)
 
                 # Caso B: La cinta mueve a la DERECHA
                 # Si el paquete pasa el centro hacia la der (x es mayor que centro)
-                elif (self.numero % 2 == 0) and p.x > centro_cinta:
+                elif (self.numero % 2 == 0) and p.x > self.centro_cinta:
                     p.evolucionar(self.numero)
 
     def paquete_llego_al_final(self):
@@ -137,5 +137,3 @@ class Cinta:
                     return p
         return None
 
-    def _str_ (self) -> str:
-        return f"Cinta {self.numero} en posición ({self.x}, {self.y}) en el piso {self.piso} con {len(self._paquetes)} paquetes"

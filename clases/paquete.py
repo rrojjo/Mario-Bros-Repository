@@ -92,5 +92,3 @@ class Paquete:
         """Verifica si el paquete llegó al extremo de la cinta"""
         return self.x >= limite_x
 
-    def __str__(self) -> str:
-        return f"Paquete en posición ({self.x}, {self.y}) en el piso {self.piso}, cinta {self.cinta_actual}"

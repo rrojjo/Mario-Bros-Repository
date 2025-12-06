@@ -64,5 +64,3 @@ class Camion:
         #Resetea el contador de paquetes (se usará cuando el camión vuelva  del reparto).
         self._paquetes_cargados = 0
 
-    def __str__(self) -> str:
-        return "Camión en (" + str(self.x) + "," + str(self.y) + ") - Carga: " + str(self.paquetes_cargados) + "/" + str(self.capacidad)
