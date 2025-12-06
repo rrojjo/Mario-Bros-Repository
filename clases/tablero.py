@@ -225,7 +225,7 @@ class Tablero:
             # Nace a la derecha de la cinta 0
             cinta0 = self.cintas[0]
             # Ajuste: nace al final de la cinta visualmente (x + ancho)
-            nuevo = Paquete(cinta0.x + 60, cinta0.y, 0, 0)
+            nuevo = Paquete(cinta0.x + 70, cinta0.y, 0, 0)
             cinta0.agregar_paquete(nuevo)
 
         # B. Mover y Transferir
@@ -313,6 +313,9 @@ class Tablero:
             # Dibuja un trozo de columna por CADA cinta.
             # Si dos cintas están a la misma altura, se dibujará dos veces (no se nota).
             pyxel.blt(184, cinta.y - 3, 0, 136, 8, 16, 16)
+
+        # DISPENSADOR DE PAQUETES
+        pyxel.blt(352, 158, 0, 128, 70, 16, 6)
 
         # DEBUG: Ver dónde están las cintas invisibles (Puntos Rojos)
         # Esto te ayudará a saber si la lógica coincide con el dibujo
