@@ -11,7 +11,8 @@ class Cinta:
         self._paquetes=[] #lista de paquetes en la cinta
 
         self.ancho=146 #ancho visual de la cinta
-        self.centro_cinta = self.x + (self.ancho / 2)
+        self.centro_cinta = self.x + ((self.ancho + 8) / 2) # +8 para que el
+        # cambio de forma se produzca detrás de la columna
 
 
 #Propiedad numero
@@ -110,8 +111,7 @@ class Cinta:
 
                 # Caso A: La cinta mueve a la IZQUIERDA
                 # Si el paquete pasa el centro hacia la izq (x es menor que centro)
-                if ((
-                        self.numero == 0 or self.numero % 2 != 0) and p.x <
+                if ((self.numero == 0 or self.numero % 2 != 0) and p.x <
                         self.centro_cinta):
                     p.evolucionar(self.numero)
 

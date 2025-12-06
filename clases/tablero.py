@@ -104,6 +104,9 @@ class Tablero:
         self.puntos = 0
         self.fallos = 0
 
+        # --- NUEVO: Lista para animación de caída ---
+        self.paquetes_cayendo = []
+
         # SPRINT 3: Generador de paquetes
         self.tiempo_aparicion = 120  # Frames (2 segundos)
         self.contador_frames = 0
@@ -191,6 +194,26 @@ class Tablero:
         # --- MOVIMIENTO DE MARIO (Flechas) ---
         # Sube y baja de 2 en 2 pisos (0 -> 2 -> 4)
 
+        # --- NUEVO: Actualizar paquetes cayendo (Física de gravedad) ---
+        velocidad_caida = 3
+        # Movemos los paquetes hacia abajo
+        for p in self.paquetes_cayendo:
+            p.y += velocidad_caida
+
+        # Eliminamos de la memoria los que ya salieron de la pantalla (limpieza)
+        # 1. Creamos una lista vacía temporal
+        paquetes_validos = []
+
+        # 2. Recorremos la lista original
+        for p in self.paquetes_cayendo:
+            # 3. Verificamos la condición (si está dentro de la pantalla)
+            if p.y < self.alto:
+                # 4. Si cumple, lo agregamos a la lista temporal
+                paquetes_validos.append(p)
+
+        # 5. Reemplazamos la lista original con la lista filtrada
+        self.paquetes_cayendo = paquetes_validos
+
         # SUBIR
         if pyxel.btnp(pyxel.KEY_UP):
             siguiente_piso = self.mario.piso + 2
@@ -257,7 +280,6 @@ class Tablero:
             cinta0.agregar_paquete(nuevo)
 
         # B. Mover y Transferir
-        # B. Mover y Transferir
         for i in range(len(self.cintas)):
             cinta = self.cintas[i]
             cinta.actualizar_paquetes()
@@ -277,6 +299,7 @@ class Tablero:
                     if self.luigi.piso == cinta.piso:
                         recogido = True
 
+                # IMPORTANTE: El paquete se retira de la CINTA, pero seguimos teniendo la referencia en 'paquete_saliente'
                 cinta.retirar_paquete(paquete_saliente)
 
                 if recogido:
@@ -325,6 +348,8 @@ class Tablero:
                             self.camion.vaciar()
                 else:
                     self.fallos += 1
+                    # --- NUEVO: En lugar de desaparecer, pasa a la lista de caídos ---
+                    self.paquetes_cayendo.append(paquete_saliente)
 
     def draw(self):
         """Este es un metodo pyxel que se ejecuta en cada iteración del
@@ -347,6 +372,10 @@ class Tablero:
                 # Usamos el sprite del paquete (se ajusta solo si está vacío o lleno)
                 # El * desempaqueta la tupla (0, u, v, w, h, colkey)
                 pyxel.blt(p.x, p.y, *p.sprite)
+
+        # --- NUEVO: Dibujar paquetes cayendo ---
+        for p in self.paquetes_cayendo:
+            pyxel.blt(p.x, p.y, *p.sprite)
 
         # --- COLUMNA CENTRAL (Forma simple) ---
         for cinta in self.cintas:
