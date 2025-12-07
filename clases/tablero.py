@@ -15,11 +15,14 @@ GAMEOVER = 3
 class Tablero:
     """Esta clase contiene un simple tablero"""
 
-    def __init__(self, ancho: int, alto: int, pisos):
+    def __init__(self, ancho: int, alto: int, pisos, puntos_levelup: int):
         # 1. Asignar atributos usando los setters
         self.ancho = ancho
         self.alto = alto
         self.pisos = pisos
+
+        # Guardamos la regla de dificultad
+        self.puntos_levelup = puntos_levelup
 
         # --- CONTROL DE ESTADOS (SPRINT 4) ---
         self.estado_juego = JUGANDO
@@ -194,8 +197,8 @@ class Tablero:
         # --- MOVIMIENTO DE MARIO (Flechas) ---
         # Sube y baja de 2 en 2 pisos (0 -> 2 -> 4)
 
-        # --- NUEVO: Actualizar paquetes cayendo (Física de gravedad) ---
-        velocidad_caida = 3
+        # --- Actualizar paquetes cayendo (Física de gravedad) ---
+        velocidad_caida = 4
         # Movemos los paquetes hacia abajo
         for p in self.paquetes_cayendo:
             p.y += velocidad_caida
@@ -270,14 +273,37 @@ class Tablero:
         # --- 2. LÓGICA DE PAQUETES (Sprint 3) ---
 
         # A. Generar paquetes nuevos en Cinta 0
+
+        # Regla: "Siempre debe haber, al menos, un paquete en juego" (PDF)
+        # Tú has pedido empezar con 3.
+        base_minima = 3
+        incremento_dificultad = self.puntos // self.puntos_levelup
+
+        # El número mínimo de paquetes que debe haber en pantalla:
+        min_paquetes = base_minima + incremento_dificultad
+
+        # 2. Contar cuántos paquetes hay REALMENTE en juego
+        paquetes_en_juego = 0
+        for c in self.cintas:
+            paquetes_en_juego += len(c.paquetes)
+        paquetes_en_juego += len(self.paquetes_cayendo)
+
+        # 3. Lógica de aparición
         self.contador_frames += 1
+
+        # Si tenemos MENOS paquetes que el MÍNIMO REQUERIDO, generamos uno nuevo
         if self.contador_frames >= self.tiempo_aparicion:
-            self.contador_frames = 0
-            # Nace a la derecha de la cinta 0
-            cinta0 = self.cintas[0]
-            # Ajuste: nace al final de la cinta visualmente (x + ancho)
-            nuevo = Paquete(cinta0.x + 70, cinta0.y, 0, 0)
-            cinta0.agregar_paquete(nuevo)
+            if paquetes_en_juego < min_paquetes:
+                self.contador_frames = 0  # Reseteamos temporizador
+
+                # Nace a la derecha de la cinta 0
+                cinta0 = self.cintas[0]
+                nuevo = Paquete(cinta0.x + 70, cinta0.y, 0, 0)
+                cinta0.agregar_paquete(nuevo)
+            else:
+                # Si ya cumplimos el mínimo, mantenemos el contador listo
+                # para generar INMEDIATAMENTE si se pierde un paquete
+                self.contador_frames = self.tiempo_aparicion
 
         # B. Mover y Transferir
         for i in range(len(self.cintas)):
@@ -395,7 +421,7 @@ class Tablero:
             pyxel.text(self.ancho // 2 - 35, self.alto // 2 + 10,
                        "Pulsa Q para salir", 7)
 
-        pyxel.text(100, 5, f"FALLOS: {self.fallos}", color_fallos)
+        pyxel.text(100, 5, f"FALLOS: {self.fallos}/3", color_fallos)
 
 
         # DEBUG: Ver dónde están las cintas invisibles (Puntos Rojos)

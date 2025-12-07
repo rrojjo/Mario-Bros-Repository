@@ -7,6 +7,7 @@ class Nivel:
         self._configurar_dimensiones()
         self._configurar_pisos()
         self.num_cintas = self._configurar_cintas()
+        self.puntos_levelup = self._configurar_puntos_paquetes()
 
     @property
     def dificultad(self):
@@ -99,3 +100,16 @@ class Nivel:
             self.num_pisos = 5 # Pisos 0 a 5
         elif self.dificultad == "MEDIO" or self.dificultad == "EXTREMO":
             self.num_pisos = 7 # Pisos 0 a 7
+
+    def _configurar_puntos_paquetes(self):
+        """Define cada cuántos puntos se añade un paquete extra (Según Tabla PDF)"""
+        if self.dificultad == "FACIL":
+            return 50  # Incrementa cada 50 puntos
+        elif self.dificultad == "MEDIO":
+            return 30  # Incrementa cada 30 puntos
+        elif self.dificultad == "EXTREMO":
+            return 30  # Incrementa cada 30 puntos
+        elif self.dificultad == "CRAZY":
+            return 20  # Incrementa cada 20 puntos
+        else:
+            return 50  # Valor por defecto
