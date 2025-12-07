@@ -56,7 +56,10 @@ class Jefe:
             self.contador_cambio += 1
             if self.contador_cambio >= self.velocidad_animacion:
                 self.contador_cambio = 0
-                self.frame_actual = 1 if self.frame_actual == 0 else 0
+                if self.frame_actual == 0:
+                    self.frame_actual = 1
+                else:
+                    self.frame_actual = 0
 
     def draw(self):
         if self.visible:
@@ -85,7 +88,7 @@ class Jefe:
                     v = 48
                 else:
                     v = 64
-                texto = "¡¡#@%&?$#!!"  # Opcional: Gruñido
+                texto = "¡¡#@%&?$#!!"  # Gruñido/Insultos censurados
 
             # 3. Dibujar
             pyxel.blt(self.x, self.y, 0, u, v, ancho, 16, 15)
