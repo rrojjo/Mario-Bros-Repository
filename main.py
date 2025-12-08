@@ -1,6 +1,6 @@
 # main
 
-from clases.app import App
+from clases.tablero import Tablero
 
 if __name__ == "__main__":
-    App()
+    Tablero()
