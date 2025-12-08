@@ -437,7 +437,7 @@ class Tablero:
             pyxel.blt(centro_x - 50, centro_y - 20, 0, 152, 200, 100, 40)
 
             # Textos del menú
-            pyxel.text(centro_x - 60, centro_y - 12, "SELECCIONA EL NIVEL DE "
+            pyxel.text(centro_x - 60, centro_y - 27, "SELECCIONA EL NIVEL DE "
                                                      "DIFICULTAD"
                                                      ":", 10)
 
@@ -446,16 +446,16 @@ class Tablero:
 
             if self.indice_dificultad == 0:
                 col_facil = 8  # Rojo si seleccionado
-                pyxel.text(centro_x - 10, centro_y, "> FACIL", col_facil)
-                pyxel.text(centro_x - 10, centro_y + 10, "  MEDIO", col_medio)
+                pyxel.text(centro_x - 10, centro_y - 15, "> FACIL", col_facil)
+                pyxel.text(centro_x - 10, centro_y - 5, "  MEDIO", col_medio)
             else:
                 col_medio = 8
-                pyxel.text(centro_x - 10, centro_y, "  FACIL", col_facil)
-                pyxel.text(centro_x - 10, centro_y + 10, "> MEDIO", col_medio)
+                pyxel.text(centro_x - 10, centro_y - 15, "  FACIL", col_facil)
+                pyxel.text(centro_x - 10, centro_y - 5, "> MEDIO", col_medio)
 
-            pyxel.text(centro_x - 47, centro_y + 25, "(ESPACIO o ENTER para "
+            pyxel.text(centro_x - 47, centro_y + 10, "(ESPACIO o ENTER para "
                                                      "jugar)", 6)
-            pyxel.text(centro_x - 38, centro_y + 40, "(Q para cerrar el "
+            pyxel.text(centro_x - 38, centro_y + 25, "(Q para cerrar el "
                                                      "juego)", 6)
             return
 
