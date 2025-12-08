@@ -28,8 +28,9 @@ class Tablero:
 
         # --- CONTROL DE ESTADOS (SPRINT 4) ---
         self.estado_juego = JUGANDO
-        self.tiempo_reparto = 180  # 180 frames = 3 segundos de descanso
+        self.tiempo_reparto = 60
         self.contador_reparto = 0
+        self.camion_volviendo = False
 
         # --- 1. DEFINICIÓN DE ALTURAS (Basado en tu imagen) ---
         # Mapeamos: Número de Piso Lógico -> Coordenada Y visual
@@ -61,13 +62,22 @@ class Tablero:
             5: 59,  # Misma altura que el piso 4 de Mario
         }
 
-        # Crear personaje
-        #Mario
-        self.mario = Personaje(265, self.alturas_mario[0], 0, "Mario")
-        # Luigi
-        self.luigi = Personaje(93, self.alturas_luigi[1], 1, "Luigi")
-        #Crear camión
-        self.camion = Camion(10, 74)
+        # --- CREAR OBJETOS INICIALES ---
+        # Guardamos las coordenadas iniciales para usarlas en el reinicio
+        self.inicio_mario = {'x': 265, 'y': self.alturas_mario[0], 'piso': 0}
+        self.inicio_luigi = {'x': 93, 'y': self.alturas_luigi[1], 'piso': 1}
+        self.inicio_camion = {'x': 10, 'y': 74}
+
+        self.mario = Personaje(self.inicio_mario['x'], self.inicio_mario['y'],
+                               self.inicio_mario['piso'], "Mario")
+        self.luigi = Personaje(self.inicio_luigi['x'], self.inicio_luigi['y'],
+                               self.inicio_luigi['piso'], "Luigi")
+        self.camion = Camion(self.inicio_camion['x'], self.inicio_camion['y'])
+        self.jefe = Jefe(0, 0)
+
+        # Variables de castigo
+        self.personaje_castigado = None
+        self.memoria_personaje = {}
         # --- 3. CREACIÓN DE CINTAS (CRÍTICO PARA SPRINT 3) ---
         # Creamos las cintas invisibles donde se moverán los paquetes.
         # Las coordenadas Y deben coincidir con las plataformas.
@@ -101,14 +111,6 @@ class Tablero:
         self.cintas.append(
             Cinta(numero=5, x=x_resto_cintas, y=56, piso=5))
 
-        # Crear JEFE
-        # Lo colocamos abajo a la izquierda para finalizar el descanso
-        self.jefe = Jefe(0, 0)
-
-        # Variables para restaurar personaje tras castigo
-        self.personaje_castigado = None
-        self.memoria_personaje = {}  # Para guardar piso y Y
-
         # Marcadores
         self.puntos = 0
         self.fallos = 0
@@ -125,6 +127,9 @@ class Tablero:
         pyxel.init(self.ancho, self.alto, title="Mario Bros Game")
 
         pyxel.load("assets/graficosprc.pyxres")
+
+        # --- SONIDOS (Sprint Opcional) ---
+        self.definir_sonidos()
 
         # Ejecutando el juego
         pyxel.run(self.update, self.draw)
@@ -173,26 +178,77 @@ class Tablero:
         else:
             self.__pisos = valor
 
+    def definir_sonidos(self):
+        """Define los efectos de sonido en los bancos de Pyxel"""
+        # Sonido 0: RECOGIDA / PASE (Agudo y corto)
+        # Notas: g2 (sol), tono: p (pulso), vol: 7, efecto: n (ninguno), velocidad: 4
+        pyxel.sound(0).set("g2", "p", "7", "n", 4)
+
+        # Sonido 1: ERROR / CAÍDA (Grave y ruidoso)
+        # Notas: c1d1 (grave), tono: n (noise/ruido), vol: 7, efecto: f (fade out), velocidad: 10
+        pyxel.sound(1).set("c1d1", "n", "7", "f", 10)
+
+        # Sonido 2: CAMIÓN LLENO / REPARTO (Melodía rápida)
+        # Notas: c3e3g3c4 (do mi sol do), tono: s (square), vol: 6, efecto: n, velocidad: 8
+        pyxel.sound(2).set("c3e3g3c4", "s", "6", "n", 8)
+
+        # Sonido 3: GAME OVER (Melodía triste)
+        pyxel.sound(3).set("c3b2a2g2", "t", "7", "s", 15)
+
     def reiniciar_juego(self):
-        """Reinicia variables para jugar otra vez"""
+        """
+        Reinicia TOTALMENTE el juego como si fuera una partida de 0.
+        Restablece posiciones, puntuación, estados y objetos.
+        """
+        # 1. Marcadores
         self.puntos = 0
         self.fallos = 0
-        self.camion.vaciar()
+        self.contador_frames = 0
+        self.contador_reparto = 0
+        self.camion_volviendo = False
+
+        # 2. Estado
         self.estado_juego = JUGANDO
-        # Limpiar paquetes de las cintas
+
+        # 3. Limpieza de Objetos Dinámicos
+        self.paquetes_cayendo = []  # Borrar paquetes en el aire
+        self.camion.vaciar()  # Borrar carga del camión
+
+        # Borrar paquetes de las cintas
         for cinta in self.cintas:
-            # Accedemos a la lista protegida a través de la property (si existe setter)
-            # o limpiamos uno a uno. Como _paquetes es interno, usaremos un truco:
             while len(cinta.paquetes) > 0:
                 cinta.retirar_paquete(cinta.paquetes[0])
 
+        # 4. Restablecer Posiciones (IMPORTANTE)
+        # Mario
+        self.mario.x = self.inicio_mario['x']
+        self.mario.y = self.inicio_mario['y']
+        self.mario.piso = self.inicio_mario['piso']
+        self.mario.set_mirada_invertida(False)  # Asegurar que mira bien
+
+        # Luigi
+        self.luigi.x = self.inicio_luigi['x']
+        self.luigi.y = self.inicio_luigi['y']
+        self.luigi.piso = self.inicio_luigi['piso']
+        self.luigi.set_mirada_invertida(False)
+
+        # Camión (Por si se quedó a medio camino en la animación)
+        self.camion.x = self.inicio_camion['x']
+        self.camion.y = self.inicio_camion['y']
+
+        # Jefe (Ocultarlo si estaba visible)
+        self.jefe.visible = False
+
     def iniciar_reparto(self):
+        # SONIDO: Reproducir melodía de camión (Canal 1 para no cortar otros sonidos)
+        pyxel.play(1, 2)
         """
         Activa el estado de REPARTO.
         Las cintas se paran y se limpia el borde.
         """
         self.estado_juego = REPARTO
         self.contador_reparto = self.tiempo_reparto
+        self.camion_volviendo = False  # Nos aseguramos de empezar yendo hacia fuera
 
         # REGLA: Si un paquete está en la última posición, desaparece.
         for cinta in self.cintas:
@@ -237,72 +293,59 @@ class Tablero:
                 self.estado_juego = JUGANDO
             return
 
-        # --- LÓGICA DE REPARTO (PAUSA) ---
+        # --- ESTADO: REPARTO (ANIMADO) ---
         if self.estado_juego == REPARTO:
-            # Descontamos tiempo
-            self.contador_reparto -= 1
+            velocidad_camion = 2
 
-            # Animación de paquetes cayendo (opcional, dejamos que terminen de caer)
-            velocidad_caida = 4
-            paquetes_validos = []
-            for p in self.paquetes_cayendo:
-                p.y += velocidad_caida
-                if p.y < self.alto:
-                    paquetes_validos.append(p)
-            self.paquetes_cayendo = paquetes_validos
+            # FASE 1: IRSE (Hacia la izquierda)
+            if not self.camion_volviendo:
+                # Si el camión aún está visible (x > -60), lo movemos a la izquierda
+                if self.camion.x > -60:
+                    self.camion.mover(-velocidad_camion)
 
-            # Si acaba el tiempo, volvemos a jugar
-            if self.contador_reparto <= 0:
-                self.camion.vaciar()  # El camión vuelve vacío y listo
-                # --- ACTIVAR AL JEFE ---
-                self.estado_juego = JEFE_MANDANDO
-                # Aparece por 60 frames (1 segundo),
-                # False = mirando a la derecha (hacia Luigi o general)
-                # Puedes poner True para que mire a Mario si prefieres.
-                self.jefe.aparecer_trabajo(39, 171, 180)
-            return
+                # Si ya salió de pantalla, esperamos el tiempo de reparto
+                else:
+                    self.contador_reparto -= 1
+
+                    # Si acaba el tiempo, vaciamos y empezamos a volver
+                    if self.contador_reparto <= 0:
+                        self.camion.vaciar()
+                        self.camion_volviendo = True
+
+            # FASE 2: VOLVER (Hacia la derecha)
+            else:
+                # Movemos el camión a la derecha hasta su posición original (10)
+                if self.camion.x < 10:
+                    self.camion.mover(velocidad_camion)
+
+                # Si llegó a su sitio, activamos al JEFE
+                else:
+                    self.camion.x = 10  # Aseguramos posición exacta
+                    self.camion_volviendo = False
+
+                    # Transición al Jefe
+                    self.estado_juego = JEFE_MANDANDO
+                    self.jefe.aparecer_trabajo(39, 171, 180)
+
+            return  # IMPORTANTE: Salimos para no procesar juego
 
         # --- ESTADO: JEFE MANDANDO (Post-reparto) ---
         if self.estado_juego == JEFE_MANDANDO:
-            # Esperamos a que el jefe termine su animación
             if not self.jefe.visible:
-                # Cuando el jefe se oculta, volvemos a jugar
                 self.estado_juego = JUGANDO
             return
 
         # ==========================================
-        #  LÓGICA PRINCIPAL (SOLO SI ESTADO == JUGANDO)
+        #  LÓGICA PRINCIPAL (JUGANDO)
         # ==========================================
 
-        # --- Actualizar paquetes cayendo ---
+        # Actualizar paquetes cayendo
         velocidad_caida = 4
-        for p in self.paquetes_cayendo:
-            p.y += velocidad_caida
-
         paquetes_validos = []
         for p in self.paquetes_cayendo:
-            if p.y < self.alto:
-                paquetes_validos.append(p)
-        self.paquetes_cayendo = paquetes_validos
-
-        # --- Actualizar paquetes cayendo (Física de gravedad) ---
-        velocidad_caida = 4
-        # Movemos los paquetes hacia abajo
-        for p in self.paquetes_cayendo:
             p.y += velocidad_caida
-
-        # Eliminamos de la memoria los que ya salieron de la pantalla (limpieza)
-        # 1. Creamos una lista vacía temporal
-        paquetes_validos = []
-
-        # 2. Recorremos la lista original
-        for p in self.paquetes_cayendo:
-            # 3. Verificamos la condición (si está dentro de la pantalla)
             if p.y < self.alto:
-                # 4. Si cumple, lo agregamos a la lista temporal
                 paquetes_validos.append(p)
-
-        # 5. Reemplazamos la lista original con la lista filtrada
         self.paquetes_cayendo = paquetes_validos
 
         # --- MOVIMIENTO DE MARIO (Flechas) ---
@@ -421,6 +464,8 @@ class Tablero:
 
                 if recogido:
                     self.puntos += 1
+                    # SONIDO: Éxito (Canal 0)
+                    pyxel.play(0, 0)
                     # --- ACTIVAR ANIMACIÓN DE RECOGIDA ---
                     if cinta.numero in [0, 2, 4]:
                         self.mario.animar_recogida()
@@ -471,6 +516,13 @@ class Tablero:
                 else:
                     # ============ FALLO DETECTADO ============
                     self.fallos += 1
+                    # SONIDO: Fallo (Canal 0 para que suene inmediato)
+                    pyxel.play(0, 1)
+
+                    if self.fallos >= 3:
+                        # SONIDO: Game Over (Canal 1)
+                        pyxel.play(1, 3)
+
                     self.paquetes_cayendo.append(paquete_saliente)
 
                     # 1. Identificar culpable
@@ -529,16 +581,11 @@ class Tablero:
         # Dibuja el personaje, los parámetros de pyxel.blt son (x, y, sprite tuple)
         pyxel.blt(self.mario.x, self.mario.y, *self.mario.sprite)
         pyxel.blt(self.luigi.x, self.luigi.y, *self.luigi.sprite)
-        # CAMIÓN: Solo se dibuja si NO estamos en reparto (simula que se fue)
-        if self.estado_juego != REPARTO:
-            pyxel.blt(self.camion.x, self.camion.y, *self.camion.sprite)
-            # NUEVO: Dibujar la carga apilada dentro del camión
-            for caja in self.camion.carga_visual:
-                # caja es un diccionario con x, y, sprite
-                pyxel.blt(caja["x"], caja["y"], *caja["sprite"])
-        else:
-            # Mensaje opcional durante el reparto
-            pyxel.text(10, 60, "REPARTO...", 10)
+        # DIBUJAR CAMIÓN
+        pyxel.blt(self.camion.x, self.camion.y, *self.camion.sprite)
+        for caja in self.camion.carga_visual:
+            # caja es un diccionario con x, y, sprite
+            pyxel.blt(caja["x"], caja["y"], *caja["sprite"])
 
         # PAQUETES (Sprint 3)
         for cinta in self.cintas:
@@ -560,9 +607,13 @@ class Tablero:
         # DISPENSADOR DE PAQUETES
         pyxel.blt(352, 158, 0, 128, 70, 16, 6)
 
+        # --- DIBUJAR AL JEFE ---
+        self.jefe.draw()
+
         pyxel.text(10, 5, f"PUNTOS: {self.puntos}", 7) # Color 7 es blanco
 
         color_fallos = 8  # Rojo
+        pyxel.text(100, 5, f"FALLOS: {self.fallos}/3", color_fallos)
         if self.fallos >= 3:
             # TEXTO GRANDE CENTRADO (Más o menos)
             pyxel.text(self.ancho // 2 - 20, self.alto // 2, "GAME OVER", 8)
@@ -572,17 +623,5 @@ class Tablero:
                                                                   "para "
                                                                   "reiniciar", 1)
 
-        pyxel.text(100, 5, f"FALLOS: {self.fallos}/3", color_fallos)
 
-        # --- DIBUJAR AL JEFE ---
-        self.jefe.draw()
 
-        # 1. Muestra la coordenada REAL (sin sumar +1 ni +5)
-        coord_texto = f"{pyxel.mouse_x},{pyxel.mouse_y}"
-
-        # 2. Dibuja el texto un poco apartado para que no tape el cursor
-        pyxel.text(pyxel.mouse_x + 5, pyxel.mouse_y - 10, coord_texto, 7)
-
-        # 3. Usa un píxel real (pset) o una cruz para marcar la posición exacta
-        # Esto asegura que lo que ves es EXACTAMENTE donde está el ratón
-        pyxel.pset(pyxel.mouse_x, pyxel.mouse_y, 7)

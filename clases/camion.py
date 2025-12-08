@@ -5,6 +5,7 @@ class Camion:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
+        self.x_inicial=x
         self._paquetes_cargados=0 #contador
         self._capacidad=8 #fijo
         self.sprite= (0, 32, 64, 47, 48, 15)
@@ -21,8 +22,7 @@ class Camion:
     def x(self, x: int):
         if not isinstance(x, int):
             raise TypeError ("La x debe ser un entero " + str(type(x)))
-        elif x < 0:
-            raise ValueError("La x no debe ser un número negativo")
+        # ELIMINAMOS LA RESTRICCIÓN DE NEGATIVOS para que pueda salir de pantalla
         else:
             self.__x = x
 
@@ -52,6 +52,13 @@ class Camion:
         return self._capacidad
 
 #LÓGICA DE COMPORTAMIENTO
+
+    def mover(self, dx: int):
+        """Mueve el camión (y su carga) horizontalmente"""
+        self.x += dx
+        # ¡Importante! También movemos las cajas visuales que lleva encima
+        for caja in self.carga_visual:
+            caja["x"] += dx
 
     def cargar_paquete(self, paquete_objeto):
         """
