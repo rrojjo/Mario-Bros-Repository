@@ -455,6 +455,8 @@ class Tablero:
 
             pyxel.text(centro_x - 47, centro_y + 25, "(ESPACIO o ENTER para "
                                                      "jugar)", 6)
+            pyxel.text(centro_x - 38, centro_y + 40, "(Q para cerrar el "
+                                                     "juego)", 6)
             return
 
         # --- DIBUJO DEL JUEGO ---
