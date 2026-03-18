@@ -30,8 +30,8 @@ Requiere Python 3.x instalado.
 
 1. Clonar y acceder al repositorio:
    ```bash
-   git clone [https://github.com/rrojjo/Mario-Bros-Repository.git](https://github.com/rrojjo/Mario-Bros-Repository.git)
-   cd Mario-Bros-Repository
+   git clone [https://github.com/rrojjo/mario-bros-pyxel.git](https://github.com/rrojjo/mario-bros-pyxel.git)
+   cd mario-bros-pyxel
    ```
 
 2. Instalar dependencias:
