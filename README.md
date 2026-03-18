@@ -1,4 +1,4 @@
-# 🏭 Game & Watch: Mario Bros (Adaptación en Python)
+# Game & Watch: Mario Bros (Adaptación en Python)
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![Pyxel](https://img.shields.io/badge/Pyxel-Retro_Game_Engine-red.svg)](https://github.com/kitao/pyxel)
